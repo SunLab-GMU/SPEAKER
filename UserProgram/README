@@ -1,0 +1,5 @@
+Prerequirement: apt-get -y install libseccomp-dev
+
+Build: gcc -o seccomp-ua seccomp-ua.c -lseccomp
+
+Run: /home/lglei/lglei/MTD/libseccomp-example# ./seccomp-ua -pid $(pidof "bash" | awk '{print $2}') -filepath /home/lglei/lglei/MTD/system-call/docker-run-syscall-list-with-exit-104
