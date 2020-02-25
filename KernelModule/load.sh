@@ -30,6 +30,6 @@ sudo insmod speaker.ko\
 module="honeypage_driver"
 
 major=$(awk "\$2==\"$module\" {print \$1}" /proc/devices)
-sudo mknod /dev/chrdev c $major 0
+sudo mknod /dev/speaker c $major 0
 
-sudo chmod 777 /dev/chrdev
+sudo chmod 777 /dev/speaker

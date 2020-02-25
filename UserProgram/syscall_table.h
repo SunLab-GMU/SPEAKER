@@ -53,4 +53,4 @@ const char *syscall_table[] = {
 	"clock_adjtime","syncfs",        "sendmmsg",      "setns",          "getcpu",       "process_vm_readv",
     "process_vm_writev","kcmp",      "finit_module",  "sched_setattr",  "sched_getattr","renameat2",
 	"seccomp",      "getrandom",     "memfd_create",  "kexec_file_load","bpf",          "execveat",
-	"userfaultfd",  "membarrier",    "mlock2" };
+	"userfaultfd",  "membarrier",    "mlock2"};

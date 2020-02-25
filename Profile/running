@@ -46,3 +46,4 @@ madvise
 rt_sigtimedwait
 getuid
 socket
+umask

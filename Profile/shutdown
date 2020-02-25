@@ -324,4 +324,4 @@ execveat
 userfaultfd
 membarrier
 mlock2
-
+umask

@@ -1,4 +1,4 @@
 all:
-	g++ --std=c++11 -o seccomp-ua seccomp-ua.c -lseccomp
+	@ g++  -o speakeru speakeru.cpp -lseccomp
 clean:
-	rm seccomp-ua
+	@ rm speakeru

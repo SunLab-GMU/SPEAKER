@@ -1,2 +1,2 @@
 sudo rmmod speaker
-sudo rm /dev/chrdev
+sudo rm /dev/speaker
