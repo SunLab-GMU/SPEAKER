@@ -1229,27 +1229,41 @@ void print_data_for_process(struct task_struct *my_current) {
 	      print_data_for_process(next_process);
 	}
 }
-
+#define STD_API
 int init_speaker(void* bpf_code, int length){
 
 	struct task_struct *tsk=NULL;		
 	
 	tsk = pid_task(find_vpid(pid), PIDTYPE_PID);
 
-	struct sock_fprog fprog = {
-		.len = (u16)length,
-		.filter = (struct sock_filter *)bpf_code,
-	};
+    struct bpf_prog *new;
+#ifdef STD_API
+	struct sock_fprog_kern fprog = {
+	    .len = (u16)length,
+	    .filter = (struct sock_filter *)bpf_code,
+    };
 
-	struct bpf_prog *new;
+	int ret = bpf_prog_create(&new, &fprog);
+#else
+    struct sock_fprog fprog = {
+	    .len = (u16)length,
+	    .filter = (struct sock_filter *)bpf_code,
+    };
 	int ret = bpf_prog_create_lglei(&new, &fprog, seccomp_check_filter);
-	if (ret)
+#endif
+    if (ret != 0){
+        printk("error: %d\n", ret);
 		return ret;	
+    }
 
+    printk("SPEAKER: pages-%d JIt-%d locked-%d gpl_compatible-%d cb_access-%d dst_needed-%d type-%d \
+        len-%d jited_len-%d\n", new->pages, new->jited, new->locked, new->gpl_compatible, new->cb_access, new->dst_needed, \
+        new->type, new->len, new->jited_len);
+    printk("SPEAKER: length-%d\n", length);
 
 	if((tsk->seccomp.filter) != NULL && ((tsk->seccomp.filter)->prog) != NULL) 
-		change_process_seccomp(new,tsk);
-
+		change_process_seccomp(new, tsk);
+    
 	return 0;
 }
 
@@ -1269,6 +1283,7 @@ long ioctl(struct file *filep, unsigned int cmd, unsigned long arg){
 		g_running_bpf_code = bpf_code;
 		g_len_running = request.lenf;
 		init_speaker((struct sock_filter*)g_running_bpf_code, g_len_running);
+        kfree(g_running_bpf_code);
 		break;
 	case 4:
 		g_shutdown_bpf_code = bpf_code;
@@ -1276,16 +1291,26 @@ long ioctl(struct file *filep, unsigned int cmd, unsigned long arg){
 		
 		g_tsk = pid_task(find_vpid(pid), PIDTYPE_PID);
 		
+#ifdef STD_API
+		struct sock_fprog_kern fprog = {
+			.len = (u16)g_len_shutdown,
+			.filter = (struct sock_filter *)g_shutdown_bpf_code,
+		};
+
+		int ret = bpf_prog_create(&g_new, &fprog);
+#else
 		struct sock_fprog fprog = {
 			.len = (u16)g_len_shutdown,
 			.filter = (struct sock_filter *)g_shutdown_bpf_code,
 		};
-		
 		int ret = bpf_prog_create_lglei(&g_new, &fprog, seccomp_check_filter);
-		if (ret){
+#endif
+
+        if (ret){
 			printk("error\n");
 			return ret;	
 		}
+        kfree(g_shutdown_bpf_code);
 		break;
 	default:
 		printk("Invalid parameter in ioctl\n");
@@ -1295,22 +1320,13 @@ long ioctl(struct file *filep, unsigned int cmd, unsigned long arg){
 	return 0;
 }
 
-int open(struct inode *inode,struct file *file) {     
-    return 0;
-}
+int open(struct inode *inode,struct file *file) { return 0; }
 
-ssize_t write(struct file *file, const char __user *usr, size_t len, loff_t *off){
-     return 0;
-}
+ssize_t write(struct file *file, const char __user *usr, size_t len, loff_t *off){ return 0; }
 
-ssize_t read(struct file *file, char __user *usr, size_t len, loff_t *off){
-    return 0;
-}
+ssize_t read(struct file *file, char __user *usr, size_t len, loff_t *off){ return 0; }
 
-
-int release(struct inode *inode, struct file *file){
-	return 0;
-}
+int release(struct inode *inode, struct file *file){ return -1; }
 
 
 
@@ -1327,41 +1343,38 @@ struct file_operations fops={
 struct cdev chrdev;
 dev_t dev_no;
 
-int __init init_func(void) {
-	u_int32_t TestMajor=0;
-    u_int32_t TestMinor=0;
+int __init init_speaker_module(void) {
+	u_int32_t TestMajor = 0;
+    u_int32_t TestMinor = 0;
     int ret;
-
+    
     dev_no = MKDEV(TestMajor,TestMinor);
-    if(dev_no>0)
-        ret = register_chrdev_region(dev_no,1,"honeypage_driver");    
+    if (dev_no > 0)
+        ret = register_chrdev_region(dev_no, 1, "speaker_driver");    
     else
-        alloc_chrdev_region(&dev_no,0,1,"honeypage_driver");
-    if(ret<0)
+        alloc_chrdev_region(&dev_no, 0, 1,"speaker_driver");
+    if (ret < 0)
         return ret;
 
-    cdev_init(&chrdev,&fops);
-    chrdev.owner=THIS_MODULE;
-    cdev_add(&chrdev,dev_no,1);
+    cdev_init(&chrdev, &fops);
+    chrdev.owner = THIS_MODULE;
+    cdev_add(&chrdev, dev_no, 1);
 
 	prog_realloc_zzy = (prog_realloc_t)addr_prog_realloc;
 	kprobe_init();
-
 
     return 0;
 }
 
 
-
-
-void __exit cleanup_func(void) {
-    unregister_chrdev_region(dev_no,1);
+void __exit cleanup_speaker_module(void) {
+    unregister_chrdev_region(dev_no, 1);
     cdev_del(&chrdev);
 	kprobe_exit();
 }
 
-module_init(init_func);
-module_exit(cleanup_func);
+module_init(init_speaker_module);
+module_exit(cleanup_speaker_module);
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("lglei <lglei@wm.edu>");
 MODULE_DESCRIPTION("process monitoring module");

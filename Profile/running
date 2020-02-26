@@ -25,7 +25,6 @@ read
 lstat
 getcwd
 open
-pread64
 unlink
 nanosleep
 fdatasync
@@ -47,3 +46,4 @@ rt_sigtimedwait
 getuid
 socket
 umask
+pread64

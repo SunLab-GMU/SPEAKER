@@ -27,7 +27,7 @@ check_addr bpf_prog_realloc $BPF_PROG_REALLOC
 sudo insmod speaker.ko\
 	addr_prog_realloc=$BPF_PROG_REALLOC
 
-module="honeypage_driver"
+module="speaker_driver"
 
 major=$(awk "\$2==\"$module\" {print \$1}" /proc/devices)
 sudo mknod /dev/speaker c $major 0

@@ -1,5 +1,5 @@
 obj-m    += speaker.o
-speaker-y := change_seccomp.o kprobe_signal.o
+speaker-y := speakerk.o kprobe_signal.o
 
 KDIR    := /lib/modules/$(shell uname -r)/build
 PWD    := $(shell pwd)

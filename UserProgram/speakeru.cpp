@@ -60,7 +60,6 @@ int main(int argc, char *argv[]) {
     for(int i = 0; i < sizeof(syscall_table) / sizeof(char*); i++)
         name_to_num[syscall_table[i]] = i;
 
-
     /* get the container id */
     char container_id[11] = {'\0'};
     FILE* container_fd = popen(run_cmd, "r");
@@ -100,6 +99,7 @@ int main(int argc, char *argv[]) {
     /* identify running point and send whitelist */
     identify_running(pid);
     prepare_filter(pid, "../Profile/running", 3);
+    //prepare_filter(pid, "../Profile/whitelist", 3);
 
 
     /* send shutdown whitelist in advance */
@@ -109,17 +109,16 @@ int main(int argc, char *argv[]) {
 }
 
 
-
 /* Two input argvs: System call list file path; Pid of the first container process */
 int prepare_filter(int pid, const char *filepath_name, int cmd){
 	//parse the arguments
 	int ret = -1;
 
 	int chrdev_fd = open("/dev/speaker", O_RDWR);
-	// if(chrdev_fd == -1){
-	// 	printf("Failed to open device!\n");
-	// 	return -1;
-	// }
+	if(chrdev_fd == -1){
+		printf("Failed to open device!\n");
+		return -1;
+	}
 
 	/* parse the input syscall file */
 	/* default action: kill (will receive a signal no.31)*/
@@ -169,8 +168,8 @@ int prepare_filter(int pid, const char *filepath_name, int cmd){
         } else
             std::cout << "Unknown syscall name: " << str << std::endl;
 	}
-
-	int filter_fd = open(TMP_PATH, O_RDWR|O_CREAT|O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+    
+    int filter_fd = open(TMP_PATH, O_RDWR|O_CREAT|O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 	if (filter_fd == -1) {
         std::cout << "Failed to open file: " << TMP_PATH << std::endl;
         seccomp_release(ctx);
@@ -212,6 +211,7 @@ int prepare_filter(int pid, const char *filepath_name, int cmd){
 	munmap(p_bpf, st.st_size);
     close(filter_fd);
     remove(TMP_PATH);
+    close(chrdev_fd);
 
 	return 0;
 }

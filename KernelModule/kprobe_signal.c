@@ -43,8 +43,6 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs) {
 	if(task->pid == pid && regs->di == 15){
 		printk("SPEAKER: receive a signal <no:%d> from <%s>\n", regs->di, current->comm);
 		printk("SPEAKER: identify SHUTDOWN phase\n");
-		// printk("SPEAKER: <%s> send p->rdi = %ld, p->rsi = %ld, p->rdx = %ld\n",
-		// 	current->comm, regs->di, task->pid, regs->dx);
 		
 		change_process_seccomp(g_new, g_tsk);
 	}
@@ -57,8 +55,6 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs) {
 /* kprobe post_handler: called after the probed instruction is executed */
 static void handler_post(struct kprobe *p, struct pt_regs *regs,
 				unsigned long flags) {
-	// pr_info("<%s> post_handler: p->addr = 0x%p, flags = 0x%lx\n",
-	// 	p->symbol_name, p->addr, regs->flags);
 }
 
 /*
