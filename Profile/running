@@ -47,3 +47,4 @@ getuid
 socket
 umask
 pread64
+bind
