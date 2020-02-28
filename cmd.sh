@@ -33,10 +33,14 @@ mysqlslap -h127.0.0.1 -uroot -pmysql --concurrency=5 --iterations=5 --query=quer
 mysqladmin -h127.0.0.1 -uroot -pmysql password mysql --ssl
 sudo mysqladmin -h127.0.0.1 -uroot -pmysql ping
 
+
+# monitor the log of dmesg 
 watch -n 1 "dmesg| tail -4"
 
+# run container with booting_kill_default.json
+sudo docker run -p 3306:3306 --security-opt seccomp:../Profile/booting_kill_default.json -e MYSQL_ROOT_PASSWORD=mysql -d percona
 
 
-
+# run container with booting_kill_default.json
 sudo docker run -p 3306:3306 --security-opt seccomp:../Profile/booting_kill_default.json -e MYSQL_ROOT_PASSWORD=mysql -d percona
 
