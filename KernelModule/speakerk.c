@@ -1229,7 +1229,7 @@ void print_data_for_process(struct task_struct *my_current) {
 	      print_data_for_process(next_process);
 	}
 }
-#define STD_API
+//#define STD_API
 int init_speaker(void* bpf_code, int length){
 
 	struct task_struct *tsk=NULL;		

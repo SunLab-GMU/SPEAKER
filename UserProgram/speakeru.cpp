@@ -51,7 +51,7 @@ int prepare_filter(int pid, const char *filepath_name, int cmd);
 int main(int argc, char *argv[]) {
 	/* boot container with seccomp */
     const char *run_cmd = "docker run -p 3306:3306 --security-opt \
-    seccomp:../Profile/booting.json \
+    seccomp:../Profile/booting_kill_default.json \
     -e MYSQL_ROOT_PASSWORD=123 -d percona";
 
     std::cout << "SPEAKER: [Phase identification] STARTUP" << std::endl;

@@ -38,5 +38,5 @@ watch -n 1 "dmesg| tail -4"
 
 
 
-
+sudo docker run -p 3306:3306 --security-opt seccomp:../Profile/booting_kill_default.json -e MYSQL_ROOT_PASSWORD=123 -d percona
 

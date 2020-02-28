@@ -24,7 +24,6 @@
 				"open",
 				"lseek",
 				"stat",
-				"pselect6",
 				"fstat",
 				"munmap",
 				"io_getevents",
@@ -34,7 +33,6 @@
 				"access",
 				"io_submit",
 				"pwrite64",
-				"epoll_pwait",
 				"lstat",
 				"openat",
 				"rt_sigprocmask",
@@ -139,7 +137,9 @@
 				"sethostname",
 				"pivot_root",
 				"exit",
-				"exit_group"	
+                "exit_group",
+                "pselect6",
+                "epoll_pwait"
 			],
 			"action": "SCMP_ACT_ALLOW",
 			"args": [],
