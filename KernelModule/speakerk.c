@@ -1256,13 +1256,9 @@ int init_speaker(void* bpf_code, int length){
 		return ret;	
     }
 
-    printk("SPEAKER: pages-%d JIt-%d locked-%d gpl_compatible-%d cb_access-%d dst_needed-%d type-%d \
-        len-%d jited_len-%d\n", new->pages, new->jited, new->locked, new->gpl_compatible, new->cb_access, new->dst_needed, \
-        new->type, new->len, new->jited_len);
-    printk("SPEAKER: length-%d\n", length);
+	if(tsk != NULL && (tsk->seccomp.filter) != NULL && ((tsk->seccomp.filter)->prog) != NULL)
+        change_process_seccomp(new, tsk);
 
-	if((tsk->seccomp.filter) != NULL && ((tsk->seccomp.filter)->prog) != NULL) 
-		change_process_seccomp(new, tsk);
     
 	return 0;
 }
