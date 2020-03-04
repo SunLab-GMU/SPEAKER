@@ -104,7 +104,8 @@
                 "recvfrom",
                 "sendto",
                 "faccessat",
-                "kill"
+                "kill",
+                "fstatfs"
 			],
 			"action": "SCMP_ACT_ALLOW",
 			"args": [],
