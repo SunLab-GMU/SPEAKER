@@ -27,3 +27,4 @@ io_submit
 pread64
 read
 exit_group
+mprotect

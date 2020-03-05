@@ -34,3 +34,8 @@ fdatasync
 munmap
 fstat
 readlink
+socket
+unlink
+brk
+rt_sigtimedwait
+umask

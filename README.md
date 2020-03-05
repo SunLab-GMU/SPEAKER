@@ -4,7 +4,7 @@
 Need new feature of runc (SCMP_ACT_LOG)
 
 See uninstall-docker.sh to see how to uninstall the current version docker
-See install-docker.sh to see how to install a new version docker
+See install-docker.sh to see how to install the lastest version docker
 
 
 Using the following cmd to get audit log
