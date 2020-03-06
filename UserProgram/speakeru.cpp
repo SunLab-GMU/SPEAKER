@@ -48,7 +48,7 @@ int prepare_filter(const char *filepath_name, int cmd, int fd);
 int main(int argc, char *argv[]) {
 	/* boot container with seccomp */
     const char *run_cmd = "docker run -p 3306:3306 --security-opt \
-    seccomp:../Profile/booting.json \
+    seccomp:../Profile/initial.json \
     -e MYSQL_ROOT_PASSWORD=mysql -d percona";
 
     /* init map, syscall name to syscall number */
@@ -61,9 +61,9 @@ int main(int argc, char *argv[]) {
 		printf("Failed to open device!\n");
 		return -1;
 	}
-    prepare_filter("../Profile/running", SET_BOOTING, chrdev_fd);
+    prepare_filter("../Profile/booting", SET_BOOTING, chrdev_fd);
     prepare_filter("../Profile/running", SET_RUNNING, chrdev_fd);
-    prepare_filter("../Profile/running", SET_SHUTDOWN, chrdev_fd);
+    prepare_filter("../Profile/shutdown", SET_SHUTDOWN, chrdev_fd);
 
 
 
@@ -206,7 +206,7 @@ int prepare_filter(const char *filepath_name, int cmd, int fd){
         .len = st.st_size / sizeof(struct sock_filter),
         .filter = (struct sock_filter *)p_bpf,
     };
-
+    
     /* pass bpf code to kernel module */
 	ioctl(fd, cmd, &fprog);
 	munmap(p_bpf, st.st_size);

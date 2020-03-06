@@ -39,3 +39,9 @@ unlink
 brk
 rt_sigtimedwait
 umask
+getuid
+connect
+bind
+listen
+openat
+getdents

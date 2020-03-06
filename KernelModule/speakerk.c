@@ -105,6 +105,7 @@ long ioctl(struct file *filep, unsigned int cmd, unsigned long arg){
         state = SETUP_PID;
         g_pid = (int)arg;
         g_tsk = pid_task(find_vpid(g_pid), PIDTYPE_PID);
+        break;
 	case SET_BOOTING:
         state = SET_BOOTING;
         copy_from_user(&fprog, (uint8_t*)arg, sizeof(fprog));
