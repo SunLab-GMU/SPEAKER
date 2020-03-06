@@ -30,22 +30,19 @@
 #include <pwd.h>
 #include "syscall_table.h"
 
-
-
-
-
-
 #define TMP_PATH "./seccomp_filter.bpf"
-typedef struct request{
-	int pid;
-	int lenf;
-	uint8_t* bpf_code;
-} REQUEST;
+
+#define SETUP_PID 3
+#define SET_BOOTING 4
+#define SET_RUNNING 5
+#define SET_SHUTDOWN 6
+#define TO_BOOTING 7
+#define TO_RUNNING 8
 
 std::map<std::string, int> name_to_num;
 
 void identify_running(int pid);
-int prepare_filter(int pid, const char *filepath_name, int cmd);
+int prepare_filter(const char *filepath_name, int cmd, int fd);
 
 
 int main(int argc, char *argv[]) {
@@ -54,11 +51,23 @@ int main(int argc, char *argv[]) {
     seccomp:../Profile/booting.json \
     -e MYSQL_ROOT_PASSWORD=mysql -d percona";
 
-    std::cout << "SPEAKER: [Phase identification] STARTUP" << std::endl;
-
     /* init map, syscall name to syscall number */
     for(int i = 0; i < sizeof(syscall_table) / sizeof(char*); i++)
         name_to_num[syscall_table[i]] = i;
+    
+    /* setup bpf prog */
+	int chrdev_fd = open("/dev/speaker", O_RDWR);
+	if(chrdev_fd == -1){
+		printf("Failed to open device!\n");
+		return -1;
+	}
+    prepare_filter("../Profile/running", SET_BOOTING, chrdev_fd);
+    prepare_filter("../Profile/running", SET_RUNNING, chrdev_fd);
+    prepare_filter("../Profile/running", SET_SHUTDOWN, chrdev_fd);
+
+
+
+    std::cout << "SPEAKER: [Phase identification] STARTUP" << std::endl;
 
     /* get the container id */
     char container_id[11] = {'\0'};
@@ -96,29 +105,22 @@ int main(int argc, char *argv[]) {
     pclose(target_pid_fd);
     int pid = atoi(target_pid);
     
+    /* update booting list and pid*/
+    ioctl(chrdev_fd, SETUP_PID, pid);
+    ioctl(chrdev_fd, TO_BOOTING, 0);
+
     /* identify running point and send whitelist */
     identify_running(pid);
-    prepare_filter(pid, "../Profile/running", 3);
-    //prepare_filter(pid, "../Profile/whitelist", 3);
+	ioctl(chrdev_fd, TO_RUNNING, 0);
 
-
-    /* send shutdown whitelist in advance */
-	prepare_filter(pid, "../Profile/shutdown", 4);
-	
     return 0;
 }
 
 
 /* Two input argvs: System call list file path; Pid of the first container process */
-int prepare_filter(int pid, const char *filepath_name, int cmd){
+int prepare_filter(const char *filepath_name, int cmd, int fd){
 	//parse the arguments
 	int ret = -1;
-
-	int chrdev_fd = open("/dev/speaker", O_RDWR);
-	if(chrdev_fd == -1){
-		printf("Failed to open device!\n");
-		return -1;
-	}
 
 	/* parse the input syscall file */
 	/* default action: kill (will receive a signal no.31)*/
@@ -200,18 +202,16 @@ int prepare_filter(int pid, const char *filepath_name, int cmd){
         return -1;
     }
 
-	REQUEST request = {
-        .pid = pid,
-        .lenf = st.st_size / sizeof(struct sock_filter),
-        .bpf_code = p_bpf
+    struct sock_fprog fprog = {
+        .len = st.st_size / sizeof(struct sock_filter),
+        .filter = (struct sock_filter *)p_bpf,
     };
 
     /* pass bpf code to kernel module */
-	ioctl(chrdev_fd, cmd, &request);
+	ioctl(fd, cmd, &fprog);
 	munmap(p_bpf, st.st_size);
     close(filter_fd);
     remove(TMP_PATH);
-    close(chrdev_fd);
 
 	return 0;
 }

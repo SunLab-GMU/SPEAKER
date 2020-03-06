@@ -59,31 +59,194 @@
 #include "utils.h"
 
 
-typedef struct request{
-	int pid;
-	int lenf;
-	uint8_t* bpf_code;
-} REQUEST;
+/* global variants */
+/* process information of target app*/
+int g_pid = 0;
+struct task_struct *g_tsk = NULL;
+
+/* bpf programs for different stages */
+struct bpf_prog *g_booting_prog = NULL, *g_running_prog = NULL, *g_shutdown_prog = NULL;
+
+/* for output logs */ 
+int phase_flag = 0;
+int state = 0;
+
+int change_process_seccomp(struct bpf_prog* new_prog, struct task_struct *tsk) {
+	if(new_prog != NULL && tsk->seccomp.filter != NULL) {
+		struct seccomp_filter* filter = tsk->seccomp.filter;
+		struct bpf_prog* org_prog = filter->prog;
+
+		filter->prog = new_prog;
+		/* free memory*/
+		bpf_prog_destroy(org_prog);
+		if(phase_flag == 0){
+			printk("SPEAKER: BOOTING whitelist updated successfully!\n");
+            phase_flag = 1;
+        }
+		else if(phase_flag == 1){
+			printk("SPEAKER: RUNNING whitelist updated successfully!\n");
+		    phase_flag = 2;
+        }else{
+			printk("SPEAKER: SHUTDOWN whitelist updated successfully!\n");
+		    phase_flag = 0;
+        }
+
+		return 0;
+	}
+	return -1;
+}
+
+long ioctl(struct file *filep, unsigned int cmd, unsigned long arg){
+    struct sock_fprog fprog;
+	int ret = 0;
+
+	switch (cmd){
+    case SETUP_PID:
+        state = SETUP_PID;
+        g_pid = (int)arg;
+        g_tsk = pid_task(find_vpid(g_pid), PIDTYPE_PID);
+	case SET_BOOTING:
+        state = SET_BOOTING;
+        copy_from_user(&fprog, (uint8_t*)arg, sizeof(fprog));
+        ret = bpf_prog_create_from_user(&g_booting_prog, &fprog, seccomp_check_filter, 0);
+        if (ret != 0) {
+            printk("SPEAKER: failed to create booting bpf program!\n");
+            return ret;
+        }
+        break;
+	case SET_RUNNING:
+        state = SET_RUNNING;
+        copy_from_user(&fprog, (uint8_t*)arg, sizeof(fprog));
+		ret = bpf_prog_create_from_user(&g_running_prog, &fprog, seccomp_check_filter, 0);
+        if (ret != 0) {
+			printk("SPEAKER: failed to create running bpf program\n");
+			return ret;	
+		}
+        break;
+    case SET_SHUTDOWN:
+        state = SET_SHUTDOWN;
+        copy_from_user(&fprog, (uint8_t*)arg, sizeof(fprog));
+        ret = bpf_prog_create_from_user(&g_shutdown_prog, &fprog, seccomp_check_filter, 0);
+        if (ret != 0) {
+			printk("SPEAKER: failed to create shutdown bpf program\n");
+			return ret;	
+		}
+        break;
+    case TO_BOOTING:
+        state = TO_BOOTING;
+        if(g_tsk != NULL && (g_tsk->seccomp.filter) != NULL && ((g_tsk->seccomp.filter)->prog) != NULL && g_booting_prog != NULL)
+            ret = change_process_seccomp(g_booting_prog, g_tsk);
+        else{
+            printk("SPEAKER: failed to update booting bpf program\n");
+            return -1;
+        }
+        break;
+    case TO_RUNNING:
+        state = TO_RUNNING;
+        if(g_tsk != NULL && (g_tsk->seccomp.filter) != NULL && ((g_tsk->seccomp.filter)->prog) != NULL && g_running_prog != NULL)
+            return change_process_seccomp(g_running_prog, g_tsk);
+        else{
+            printk("SPEAKER: failed to update running bpf program\n");
+            return -1;
+        }
+        break;
+    default:
+		printk("SPEAKER: Invalid parameter in ioctl\n");
+		break;
+	}
+	
+	return 0;
+}
+
+int open(struct inode *inode,struct file *file) { return 0; }
+
+ssize_t write(struct file *file, const char __user *usr, size_t len, loff_t *off){ return 0; }
+
+ssize_t read(struct file *file, char __user *usr, size_t len, loff_t *off){ return 0; }
+
+int release(struct inode *inode, struct file *file){ 
+    // g_pid = 0;
+    // g_tsk = NULL;
+
+    // if(state == SET_SHUTDOWN){
+    //     bpf_prog_destroy(g_shutdown_prog);
+    //     bpf_prog_destroy(g_running_prog);
+    //     bpf_prog_destroy(g_booting_prog);
+    // }
+
+    // if(state == SET_RUNNING){
+    //     bpf_prog_destroy(g_booting_prog);
+    //     bpf_prog_destroy(g_running_prog);
+    // }
+
+    // if(state == SET_BOOTING){
+    //     bpf_prog_destroy(g_booting_prog);
+    // }
+
+    // if(state == SET_BOOTING){
+    //     bpf_prog_destroy(g_shutdown_prog);
+    //     bpf_prog_destroy(g_running_prog);
+    // }
+
+    // if(state == SET_RUNNING){
+    //     bpf_prog_destroy(g_shutdown_prog);
+    // }
+
+    // g_booting_prog = NULL;
+    // g_running_prog = NULL;
+    // g_shutdown_prog = NULL;
+    // phase_flag = 0;
+    // state = 0;
+
+    return 0; 
+}
 
 
-int pid;
 
-
-uint8_t* g_running_bpf_code = NULL;
-int g_len_running = 0;
-uint8_t* g_shutdown_bpf_code = NULL;
-int g_len_shutdown = 0;
-
-static int lenf=0;
-
-static int count=0;
-
-struct seccomp_filter {
-	refcount_t usage;
-    bool log;
-	struct seccomp_filter *prev;
-	struct bpf_prog *prog;
+struct file_operations fops={
+     .owner = THIS_MODULE,
+     .open = open,
+     .write = write,
+     .read = read,
+     .release = release,
+     .unlocked_ioctl = ioctl,
 };
+
+
+struct cdev chrdev;
+dev_t dev_no;
+
+int __init init_speaker_module(void) {
+	u_int32_t TestMajor = 0;
+    u_int32_t TestMinor = 0;
+    int ret = 0;
+    
+    dev_no = MKDEV(TestMajor,TestMinor);
+    if (dev_no > 0)
+        ret = register_chrdev_region(dev_no, 1, "speaker_driver");    
+    else
+        alloc_chrdev_region(&dev_no, 0, 1,"speaker_driver");
+    if (ret < 0)
+        return ret;
+
+    cdev_init(&chrdev, &fops);
+    chrdev.owner = THIS_MODULE;
+    cdev_add(&chrdev, dev_no, 1);
+
+	kprobe_init();
+
+    return 0;
+}
+
+
+void __exit cleanup_speaker_module(void) {
+    unregister_chrdev_region(dev_no, 1);
+    cdev_del(&chrdev);
+	kprobe_exit();
+}
+
+
+
 
 
 /**
@@ -168,150 +331,7 @@ int seccomp_check_filter(struct sock_filter *filter, unsigned int flen) {
 }
 
 
-int phase_flag = 0;
-int change_process_seccomp(struct bpf_prog* prog, struct task_struct *tsk) {
-	if(prog != NULL && tsk->seccomp.filter != NULL) {
-		struct seccomp_filter* filter = tsk->seccomp.filter;
-		struct bpf_prog* org_prog = filter->prog;
 
-		filter->prog = prog;
-		//free memory
-		bpf_prog_destroy(org_prog);
-		if(phase_flag)
-			printk("SPEAKER: SHUTDOWN whitelist updated successfully!\n");
-		else{
-			phase_flag = 1;
-			printk("SPEAKER: RUNNING whitelist updated successfully!\n");
-		}
-
-		return 0;
-	}
-	return -1;
-}
-
-
-
-int init_speaker(void* bpf_code, int length){
-	struct task_struct *tsk=NULL;		
-	
-	tsk = pid_task(find_vpid(pid), PIDTYPE_PID);
-
-    struct bpf_prog *new;
-	struct sock_fprog fprog = {
-	    .len = (u16)length,
-	    .filter = (struct sock_filter *)bpf_code,
-    };
-
-    int ret = bpf_prog_create_from_user(&new, &fprog, seccomp_check_filter, 0);
-    if (ret != 0){
-        printk("error: %d\n", ret);
-		return ret;	
-    }
-
-	if(tsk != NULL && (tsk->seccomp.filter) != NULL && ((tsk->seccomp.filter)->prog) != NULL)
-        change_process_seccomp(new, tsk);
-
-    
-	return 0;
-}
-
-
-struct bpf_prog *g_new;
-struct task_struct *g_tsk;
-long ioctl(struct file *filep, unsigned int cmd, unsigned long arg){
-	REQUEST request;
-	
-    /* get request from user */
-    copy_from_user(&request, (uint8_t*)arg, sizeof(request));
-	pid = request.pid;
-
-	switch (cmd){
-	case 3:
-		g_running_bpf_code = request.bpf_code;
-		g_len_running = request.lenf;
-		init_speaker((struct sock_filter*)request.bpf_code, request.lenf);
-        break;
-	case 4:
-        break;
-		g_shutdown_bpf_code = request.bpf_code;
-		g_len_shutdown = request.lenf;
-		
-		g_tsk = pid_task(find_vpid(pid), PIDTYPE_PID);
-		
-		struct sock_fprog fprog = {
-			.len = (u16)g_len_shutdown,
-			.filter = (struct sock_filter *)g_shutdown_bpf_code,
-		};
-		int ret = bpf_prog_create_from_user(&g_new, &fprog, seccomp_check_filter, 0);
-
-        if (ret){
-			printk("error\n");
-			return ret;	
-		}
-		g_shutdown_bpf_code = NULL;
-        break;
-	default:
-		printk("Invalid parameter in ioctl\n");
-		break;
-	}
-	
-	return 0;
-}
-
-int open(struct inode *inode,struct file *file) { return 0; }
-
-ssize_t write(struct file *file, const char __user *usr, size_t len, loff_t *off){ return 0; }
-
-ssize_t read(struct file *file, char __user *usr, size_t len, loff_t *off){ return 0; }
-
-int release(struct inode *inode, struct file *file){ 
-    phase_flag = 0;
-    return -1; 
-}
-
-
-
-struct file_operations fops={
-     .owner = THIS_MODULE,
-     .open = open,
-     .write = write,
-     .read = read,
-     .release = release,
-     .unlocked_ioctl = ioctl,
-};
-
-
-struct cdev chrdev;
-dev_t dev_no;
-
-int __init init_speaker_module(void) {
-	u_int32_t TestMajor = 0;
-    u_int32_t TestMinor = 0;
-    int ret;
-    
-    dev_no = MKDEV(TestMajor,TestMinor);
-    if (dev_no > 0)
-        ret = register_chrdev_region(dev_no, 1, "speaker_driver");    
-    else
-        alloc_chrdev_region(&dev_no, 0, 1,"speaker_driver");
-    if (ret < 0)
-        return ret;
-
-    cdev_init(&chrdev, &fops);
-    chrdev.owner = THIS_MODULE;
-    cdev_add(&chrdev, dev_no, 1);
-
-	kprobe_init();
-
-    return 0;
-}
-
-
-void __exit cleanup_speaker_module(void) {
-    unregister_chrdev_region(dev_no, 1);
-    cdev_del(&chrdev);
-	kprobe_exit();
-}
 
 module_init(init_speaker_module);
 module_exit(cleanup_speaker_module);

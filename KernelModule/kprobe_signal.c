@@ -19,32 +19,25 @@ static char symbol[MAX_SYMBOL_LEN] = "prepare_signal";
 //static char symbol[MAX_SYMBOL_LEN] = "get_signal";
 module_param_string(symbol, symbol, sizeof(symbol), 0644);
 
-
-extern uint8_t* g_shutdown_bpf_code;
-extern int g_len_shutdown;
-extern int pid;
-
+extern struct bpf_prog *g_shutdown_prog;
+extern int g_pid;
+extern struct task_struct *g_tsk;
+extern int phase_flag;
 /* For each probe you need to allocate a kprobe structure */
 static struct kprobe kp = {
 	.symbol_name	= symbol,
 };
 
-extern struct bpf_prog *g_new;
-extern struct task_struct *g_tsk;
-
 /* kprobe pre_handler: called just before the probed instruction is executed */
 static int handler_pre(struct kprobe *p, struct pt_regs *regs) {
+	struct task_struct* task = (struct task_struct*)(regs->si);
 
-	// pr_info("<%s> pre_handler: p->addr = 0x%p, ip = %lx, flags = 0x%lx\n",
-	// 	, p->addr, regs->ip, regs->flags);
-
-	struct task_struct* task = regs->si;
-
-	if(task->pid == pid && regs->di == 15){
-		printk("SPEAKER: receive a signal <no:%d> from <%s>\n", regs->di, current->comm);
+	if(task->pid == g_pid && regs->di == 15){
+		printk("SPEAKER: receive a signal <no:%d> from <%s>\n", (int)(regs->di), current->comm);
 		printk("SPEAKER: identify SHUTDOWN phase\n");
 		
-		change_process_seccomp(g_new, g_tsk);
+		change_process_seccomp(g_shutdown_prog, g_tsk);
+        phase_flag = 0;
 	}
 
 

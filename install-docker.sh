@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# this shell script can install docker which supports the option SCMP_ACT_LOG of seccomp 
 sudo apt-get remove docker docker-engine docker.io containerd runc
 sudo apt-get update
 
