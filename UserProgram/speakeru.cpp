@@ -47,8 +47,7 @@ int prepare_filter(const char *filepath_name, int cmd, int fd);
 
 int main(int argc, char *argv[]) {
 	/* boot container with seccomp */
-    const char *run_cmd = "docker run -p 3306:3306 --security-opt \
-    seccomp:../Profile/initial.json \
+    const char *run_cmd = "docker run -p 3306:3306 \
     -e MYSQL_ROOT_PASSWORD=mysql -d percona";
 
     /* init map, syscall name to syscall number */

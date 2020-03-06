@@ -165,42 +165,7 @@ ssize_t write(struct file *file, const char __user *usr, size_t len, loff_t *off
 
 ssize_t read(struct file *file, char __user *usr, size_t len, loff_t *off){ return 0; }
 
-int release(struct inode *inode, struct file *file){ 
-    // g_pid = 0;
-    // g_tsk = NULL;
-
-    // if(state == SET_SHUTDOWN){
-    //     bpf_prog_destroy(g_shutdown_prog);
-    //     bpf_prog_destroy(g_running_prog);
-    //     bpf_prog_destroy(g_booting_prog);
-    // }
-
-    // if(state == SET_RUNNING){
-    //     bpf_prog_destroy(g_booting_prog);
-    //     bpf_prog_destroy(g_running_prog);
-    // }
-
-    // if(state == SET_BOOTING){
-    //     bpf_prog_destroy(g_booting_prog);
-    // }
-
-    // if(state == SET_BOOTING){
-    //     bpf_prog_destroy(g_shutdown_prog);
-    //     bpf_prog_destroy(g_running_prog);
-    // }
-
-    // if(state == SET_RUNNING){
-    //     bpf_prog_destroy(g_shutdown_prog);
-    // }
-
-    // g_booting_prog = NULL;
-    // g_running_prog = NULL;
-    // g_shutdown_prog = NULL;
-    // phase_flag = 0;
-    // state = 0;
-
-    return 0; 
-}
+int release(struct inode *inode, struct file *file){ return 0; }
 
 
 
