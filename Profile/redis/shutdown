@@ -1,0 +1,13 @@
+getpid
+openat
+read
+close
+epoll_wait
+write
+rt_sigreturn
+fstat
+fdatasync
+madvise
+fsync
+rename
+exit_group
