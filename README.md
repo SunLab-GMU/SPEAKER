@@ -13,13 +13,21 @@ The Tracing Module utilizes the Linux audit log where the invoked syscall could 
 
 The Tracing Module could be executed with the following command. In ``speaker/TracingModule``:
 ```
-sudo python tracing.py
+$ sudo python tracing.py
 ```
 Then, follow the output instruction of the script to run a docker container, wait at least 120 seconds for container to warm up, perform normal operations as much as possible, and gracefully shutdown the container.
 
-After that, three syscall lists will be generated for booting, running, and shutdown phases. You can also prepare the syscall lists by yourself (refer [syscall list examples](./ProfileExample) for format).
+After that, three syscall lists will be generated for booting, running, and shutdown phases in the folder ``speaker/profile``. You can also prepare the syscall lists by yourself (refer [syscall list examples](./ProfileExample) for format).
 
-Using the following cmd to get audit log
-``tail -f /var/log/audit/audit.log | grep SECCOMP``
-``ausearch -m 1326``
-
+### Slimming Module
+1. Build and load the kernel module that could dynamically modifies the Seccomp Filter. In ``speaker/SlimmingModule/KernelModule``:
+```
+$ sudo make
+$ sudo ./load.sh
+```
+2. Run the user program to start up the container, automatically identify the execution phase, and notify kernel module to update the Seccomp Filter. In ``speaker/SlimmingModule/UserProgram``:
+```
+# Prerequirement: apt-get -y install libseccomp-dev
+$ sudo make
+$ sudo ./speakeru
+```
