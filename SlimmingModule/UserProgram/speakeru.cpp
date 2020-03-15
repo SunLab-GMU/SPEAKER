@@ -46,23 +46,45 @@ int prepare_filter(const char *filepath_name, int cmd, int fd);
 
 
 int main(int argc, char *argv[]) {
-	/* boot container with seccomp */
-    const char *run_cmd = "docker run -p 3306:3306 \
-    -e MYSQL_ROOT_PASSWORD=mysql -d percona";
+
+    char* service="";
+    char* run_cmd="";
+
+    if(argc != 5) 
+    {
+        printf("wrong parameters!");
+        return 0;
+    }
+    for(int i=1;i<argc;i++)
+    {
+        if(!strcmp(argv[i],"-service"))
+        {
+            i++;
+            service=argv[i];
+        }
+        else if(!strcmp(argv[i],"-cmd"))
+        {
+            i++;
+            run_cmd=argv[i];
+        }
+        
+    }
+    printf("service=%s,cmd=%s\r\n\r\n",service,run_cmd);
+
 
     /* init map, syscall name to syscall number */
     for(int i = 0; i < sizeof(syscall_table) / sizeof(char*); i++)
         name_to_num[syscall_table[i]] = i;
     
     /* setup bpf prog */
-	int chrdev_fd = open("/dev/speaker", O_RDWR);
-	if(chrdev_fd == -1){
-		printf("Failed to open device!\n");
-		return -1;
-	}
-    prepare_filter("../Profile/booting", SET_BOOTING, chrdev_fd);
-    prepare_filter("../Profile/running", SET_RUNNING, chrdev_fd);
-    prepare_filter("../Profile/shutdown", SET_SHUTDOWN, chrdev_fd);
+	// int chrdev_fd = open("/dev/speaker", O_RDWR);
+	// if(chrdev_fd == -1){
+	// 	printf("Failed to open device!\n");
+	// 	return -1;
+	// }
+    //prepare_filter("../Profile/booting", SET_BOOTING, chrdev_fd);
+    //prepare_filter("../Profile/running", SET_RUNNING, chrdev_fd);
+    //prepare_filter("../Profile/shutdown", SET_SHUTDOWN, chrdev_fd);
 
 
 
@@ -94,7 +116,7 @@ int main(int argc, char *argv[]) {
     /* get the pid of tracee */
     char target_pid_cmd[100] = {'\0'};
     char target_pid[10] = {'\0'};
-    sprintf(target_pid_cmd, "ps -ef | grep %s | grep mysqld | head -1 | awk '{print $2}'", shim_pid);
+    sprintf(target_pid_cmd, "ps -ef | grep %s | grep %s | head -1 | awk '{print $2}'", shim_pid, service);
     FILE* target_pid_fd = popen(target_pid_cmd, "r");
     if (target_pid_fd == NULL){
         std::cout << "Failed to run command" << std::endl;
@@ -105,12 +127,12 @@ int main(int argc, char *argv[]) {
     int pid = atoi(target_pid);
     
     /* update booting list and pid*/
-    ioctl(chrdev_fd, SETUP_PID, pid);
-    ioctl(chrdev_fd, TO_BOOTING, 0);
+    //ioctl(chrdev_fd, SETUP_PID, pid);
+    //ioctl(chrdev_fd, TO_BOOTING, 0);
 
     /* identify running point and send whitelist */
     identify_running(pid);
-	ioctl(chrdev_fd, TO_RUNNING, 0);
+	//ioctl(chrdev_fd, TO_RUNNING, 0);
 
     return 0;
 }
@@ -229,41 +251,26 @@ void identify_running(int pid){
 
     /* this values is used to distinguish syscall entry or exit */
 	int last_syscall_num = -1;
+    unsigned long flag_time = time(NULL);
     while(1) {
         if (flag == 0){
-            waitpid(pid, &status, 0);
-            if (WIFEXITED(status))
-                break;
+            waitpid(pid, &status, WNOHANG);
 
             ptrace(PTRACE_GETREGS, pid, NULL, &regs);
-            if (last_syscall_num == regs.orig_rax)
-				last_syscall_num = -1;
+            if (last_syscall_num == regs.orig_rax){
+                if (time(NULL) - flag_time > 10)
+                    flag = 1;
+            }
 			else {
-                std::cout << "SPEAKER: syscall " << syscall_table[regs.orig_rax] << std::endl;
+                flag_time = time(NULL);
+                std::cout << "SPEAKER: syscall " << syscall_table[regs.orig_rax] << flag_time << std::endl;
 				last_syscall_num = regs.orig_rax;
 			}
 
-            if (regs.orig_rax == 7)
-                flag = 1;
-
             ptrace(PTRACE_SYSCALL, pid, 0, 0);
         } else {
-            std::cout << "SPEAKER: only system calls that wait for request" << std::endl;
-            sleep(5);
-            waitpid(pid, &status, WNOHANG);
-
-            /* there is one corner case, the syscall sequence is as follows:
-             * poll (2s) read (2s) poll (here we execute)
-             * so it is the right entry point?
-             */
-            ptrace(PTRACE_GETREGS, pid, NULL, &regs);
-            if (regs.orig_rax != 7)
-                flag = 0;
-            else {
-                std::cout << "SPEAKER: [Phase identification] RUNNING" << std::endl; 
-                ptrace(PTRACE_DETACH, pid, 0, 0);
-                return;
-            }
+            std::cout << "SPEAKER: [Phase identification] RUNNING" << std::endl; 
+            return;
         }
     }
 }
