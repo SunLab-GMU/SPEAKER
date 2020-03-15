@@ -23,11 +23,11 @@ After that, three syscall lists will be generated for booting, running, and shut
 ### Slimming Module
 1. Build and load the kernel module that could dynamically modifies the Seccomp Filter. In ``speaker/SlimmingModule/KernelModule``:
 ```
-	$ sudo make
-	$ sudo ./load.sh
+$ sudo make
+$ sudo ./load.sh
 ```
 2. Run the user program to start up the container, automatically identify the execution phase, and notify kernel module to update the Seccomp Filter. In ``speaker/SlimmingModule/UserProgram``:
 ```
-	$ sudo make
-	$ sudo ./speakeru
+$ sudo make
+$ sudo ./speakeru
 ```
