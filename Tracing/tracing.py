@@ -18,7 +18,7 @@ def build_whitelist(booting_t, shutdown_t):
 	cur_t = int(booting_t)
 	cur_call_set = []
 
-	print booting_t, shutdown_t
+	#print booting_t, shutdown_t
 
 	for i in range(log_num-1,-1,-1):
 		if i != 0:
@@ -55,15 +55,16 @@ def build_whitelist(booting_t, shutdown_t):
 
 
 	running_pt_index = -1
-	for i in range(1, len(call_per_second)-1):
+	for i in range(1, len(call_per_second)-2):
 		if (set(call_per_second[i-1]) == set(call_per_second[i]) and 
 			set(call_per_second[i]) == set(call_per_second[i+1]) and
-			len(list(set(call_per_second[i]))) < 10):
+			set(call_per_second[i]) == set(call_per_second[i+2]) and
+			len(list(set(call_per_second[i]))) < 8):
 			running_pt_index = i
-			print call_per_second[i]
+			#print call_per_second[i]
 			break
 
-	print time[running_pt_index]
+	#print time[running_pt_index]
 
 	for i in range(0, running_pt_index):
 		booting_list = set(list(booting_list)+call_per_second[i])
@@ -71,11 +72,11 @@ def build_whitelist(booting_t, shutdown_t):
 	for i in range(running_pt_index, len(call_per_second)):
 		running_list = set(list(running_list)+call_per_second[i])
 
-	print len(booting_list), len(running_list), len(shutdown_list)
+	#print len(booting_list), len(running_list), len(shutdown_list)
 
 	f = open("./booting", 'w+')
 	for item in booting_list:
-		f.write('"'+callTable[int(item)]+'"\n')
+		f.write(callTable[int(item)]+'\n')
 	f.close()
 
 	f = open("./running", 'w+')
@@ -88,37 +89,36 @@ def build_whitelist(booting_t, shutdown_t):
 		f.write(callTable[int(item)]+'\n')
 	f.close()
 
-	booting_and_running = list(set(booting_list+running_list))
-	running_and_shutdown = list(set(running_list+shutdown_list))
+	booting_and_running = list(set(booting_list)&set(running_list))
+	running_and_shutdown = list(set(running_list)&set(shutdown_list))
 	only_boooting = list(set(booting_list)-set(booting_and_running))
 	only_running = list(set(running_list)-set(booting_and_running)-set(running_and_shutdown))
 	only_shutdown = list(set(shutdown_list)-set(running_and_shutdown))
 
-	print len(only_boooting), only_boooting
-	print len(booting_and_running), booting_and_running
-	print len(only_running), only_running
-	print len(running_and_shutdown), running_and_shutdown
-	print len(only_shutdown), only_shutdown
+	# print len(only_boooting), only_boooting
+	# print len(booting_and_running), booting_and_running
+	# print len(only_running), only_running
+	# print len(running_and_shutdown), running_and_shutdown
+	# print len(only_shutdown), only_shutdown
 
 
 def main():
 	#Empty system log and restart log service
 	#Note: make sure there is enough space for log
 	#E.g., make num_logs = 99 in /etc/audit/auditd.conf
-	os.system('rm /var/log/audit/audit*')
-	os.system('service auditd restart')
+	#os.system('rm /var/log/audit/audit*')
+	#os.system('service auditd restart')
 
 	#docker_run_cmd = 'sudo docker run --security-opt seccomp:./log.json -p 5432:5432 -e POSTGRES_PASSWORD=postgres -d postgres'
-	docker_run_cmd = 'sudo docker run -p 11210:11210 couchbase'
 	#docker_run_cmd = 'docker run --security-opt seccomp:./log.json -d -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e MONGO_INITDB_ROOT_PASSWORD=secret mongo'
 	#./bin/ycsb run mongodb -s -P workloads/workloada -p recordcount=10000 -threads 16 -p mongodb.url="mongodb://mongoadmin:secret@127.0.0.1:27017" -p mongodb.auth="true"
 	#docker_run_cmd = 'sudo docker run --security-opt seccomp:./log.json -p 3306:3306 -e MYSQL_ROOT_PASSWORD=mysql -d percona'
-	#docker_run_cmd = raw_input('To run the docker, input: docker run --security-opt seccomp:./log.json [OPT] IMG[:TAG|@DIGEST] [CMD] [ARG...]\n')
+	docker_run_cmd = raw_input('To run the docker, input: docker run --security-opt seccomp:./log.json [OPT] IMG[:TAG|@DIGEST] [CMD] [ARG...]\n')
 	booting_t = time.time()
 	os.system(docker_run_cmd)
 
 	print('Please wait 90s for container to start up.')
-	time.sleep(40)
+	time.sleep(90)
 
 	print('Please perform normal operations on the running docker application.')
 
