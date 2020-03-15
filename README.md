@@ -16,7 +16,7 @@ The Tracing Module could be executed with the following command. In ``speaker/Tr
 ```
 $ sudo python tracing.py
 ```
-Then, follow the output instruction of the script to run a docker container, wait at least 120 seconds for container to warm up, perform normal operations as much as possible, and gracefully shutdown the container.
+Then, follow the output instructions of the script to run a docker container, wait at least 120 seconds for container to warm up, perform normal operations as much as possible, and gracefully shutdown the container.
 
 After that, three syscall lists will be generated for booting, running, and shutdown phases in the folder ``speaker/profile``. You can also prepare the syscall lists by yourself (refer [syscall list examples](./ProfileExample) for format).
 
@@ -29,5 +29,9 @@ $ sudo ./load.sh
 2. Run the user program to start up the container, automatically identify the execution phase, and notify kernel module to update the Seccomp Filter. In ``speaker/SlimmingModule/UserProgram``:
 ```
 $ sudo make
-$ sudo ./speakeru
+$ sudo ./speakeru -service SERVICE_NAME -cmd DOCKER_RUN_COMMAND
+
+# SERVICE_NAME is the name of first process within the container, DOCKER_RUN_COMMAND is the normal command to run the container
+# An example: sudo ./speakeru -service mysqld -cmd "docker run -p 3306:3306 -e MYSQL_ROOT_PASSWORD=mysql -d mysql"
+# Note: use quotation for DOCKER_RUN_COMMAND
 ```
