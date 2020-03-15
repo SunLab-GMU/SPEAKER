@@ -74,17 +74,17 @@ def build_whitelist(booting_t, shutdown_t):
 
 	#print len(booting_list), len(running_list), len(shutdown_list)
 
-	f = open("./booting", 'w+')
+	f = open("../Profile/booting", 'w+')
 	for item in booting_list:
 		f.write(callTable[int(item)]+'\n')
 	f.close()
 
-	f = open("./running", 'w+')
+	f = open("../Profile/running", 'w+')
 	for item in running_list:
 		f.write(callTable[int(item)]+'\n')
 	f.close()
 
-	f = open("./shutdown", 'w+')
+	f = open("../Profile/shutdown", 'w+')
 	for item in shutdown_list:
 		f.write(callTable[int(item)]+'\n')
 	f.close()
