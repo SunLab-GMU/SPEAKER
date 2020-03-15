@@ -107,7 +107,7 @@ def main():
 	#Note: make sure there is enough space for log
 	#E.g., make num_logs = 99 in /etc/audit/auditd.conf
 	#os.system('rm /var/log/audit/audit*')
-	#os.system('service auditd restart')
+	os.system('service auditd restart')
 
 	#docker_run_cmd = 'sudo docker run --security-opt seccomp:./log.json -p 5432:5432 -e POSTGRES_PASSWORD=postgres -d postgres'
 	#docker_run_cmd = 'docker run --security-opt seccomp:./log.json -d -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e MONGO_INITDB_ROOT_PASSWORD=secret mongo'
@@ -117,8 +117,8 @@ def main():
 	booting_t = time.time()
 	os.system(docker_run_cmd)
 
-	print('Please wait 90s for container to start up.')
-	time.sleep(90)
+	print('Please wait 120s for container to start up.')
+	time.sleep(120)
 
 	print('Please perform normal operations on the running docker application.')
 
