@@ -21,12 +21,12 @@ Then, follow the output instructions of the script to run a docker container, wa
 After that, three syscall lists will be generated for booting, running, and shutdown phases in the folder ``speaker/profile``. You can also prepare the syscall lists by yourself (refer [syscall list examples](./ProfileExample) for format).
 
 ### Slimming Module
-1. Build and load the kernel module that could dynamically modifies the Seccomp Filter. In ``speaker/SlimmingModule/KernelModule``:
+1. Build and load the kernel module that could dynamically modify the Seccomp Filter. In ``speaker/SlimmingModule/KernelModule``:
 ```
 $ sudo make
 $ sudo ./load.sh
 ```
-2. Run the user program to start up the container, automatically identify the execution phase, and notify kernel module to update the Seccomp Filter. In ``speaker/SlimmingModule/UserProgram``:
+2. Run the user program to start up the container, automatically identify the execution phase, and notify the kernel module to update the Seccomp Filter. In ``speaker/SlimmingModule/UserProgram``:
 ```
 $ sudo make
 $ sudo ./speakeru -service SERVICE_NAME -cmd DOCKER_RUN_COMMAND
@@ -35,7 +35,7 @@ $ sudo ./speakeru -service SERVICE_NAME -cmd DOCKER_RUN_COMMAND
 # An example: sudo ./speakeru -service mysqld -cmd "docker run -p 3306:3306 -e MYSQL_ROOT_PASSWORD=mysql -d mysql"
 # Note: use quotes for DOCKER_RUN_COMMAND
 ```
-3. Perform your normal opertaions on this container application. Use ``docker stop`` to gracefully shutdown when you would like to stop it. To unload the kernel module, in ``speaker/SlimmingModule/KernelModule``:
+3. Perform your normal operations on this container application. Use ``docker stop`` to gracefully shutdown when you would like to stop it. To unload the kernel module, in ``speaker/SlimmingModule/KernelModule``:
 ```
 $ sudo ./unload.sh
 ```
