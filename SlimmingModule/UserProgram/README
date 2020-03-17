@@ -1,5 +1,3 @@
 # Prerequirement: apt-get -y install libseccomp-dev
 
-# how to trace the syscalls of this system
-sudo trace-cmd record -e syscalls
-kernelshark
+
