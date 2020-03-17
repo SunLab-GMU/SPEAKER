@@ -35,7 +35,11 @@ $ sudo ./speakeru -service SERVICE_NAME -cmd DOCKER_RUN_COMMAND
 # An example: sudo ./speakeru -service mysqld -cmd "docker run -p 3306:3306 -e MYSQL_ROOT_PASSWORD=mysql -d mysql"
 # Note: use quotes for DOCKER_RUN_COMMAND
 ```
-3. Perform your normal opertaions on this container application. Use ``docker stop`` to gracefully shutdown when you would like to stop it. To unload the kernel module, in ``speaker/SlimmingModule/KernelModule``::
+3. Perform your normal opertaions on this container application. Use ``docker stop`` to gracefully shutdown when you would like to stop it. To unload the kernel module, in ``speaker/SlimmingModule/KernelModule``:
 ```
 $ sudo ./unload.sh
+```
+4. Check the violations of Seccomp Filter rules by the following command:
+```
+$ tail -f /var/log/audit/audit.log | grep SECCOMP 
 ```
