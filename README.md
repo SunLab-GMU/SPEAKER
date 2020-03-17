@@ -2,8 +2,9 @@
 
 ## Prerequisites
 * **OS**: Ubuntu 16.04 with kernel version 4.15.0
-* **Docker**: 19.03.6 or higher (can be installed by using [this script](./install-docker.sh)).
+* **Docker**: 19.03.6 or higher (can be installed by using [this script](./install-docker.sh))
 * **Linux seccomp filter**: run the command ``apt-get -y install libseccomp-dev``
+* **Linux audit**: run the command ``apt-get -y install auditd``
 
 
 ## Using the SPEAKER
