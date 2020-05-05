@@ -16,6 +16,7 @@ The Tracing Module utilizes the Linux audit log where the invoked syscall could 
 The Tracing Module could be executed with the following command. In ``speaker/TracingModule``:
 ```
 $ sudo python tracing.py
+
 # An example:
 # sudo docker run --security-opt seccomp:./log.json -p 3306:3306 -e MYSQL_ROOT_PASSWORD=mysql -d percona
 # c30efc346f75fe0994c57325c1608feabd8b7792e84e9dd8efeff1a053fb2951
