@@ -40,7 +40,7 @@ $ sudo ./speakeru -service SERVICE_NAME -cmd DOCKER_RUN_COMMAND
 ```
 $ sudo ./unload.sh
 ```
-4. Check the violations of Seccomp Filter rules by the following command:
+4. Check the violations of Seccomp Filter rules by the following command. Violated syscall can be added into corresponding profiles if necessery. 
 ```
-$ tail -f /var/log/audit/audit.log | grep SECCOMP 
+$ tail -f /var/log/audit/audit.log | grep SECCOMP
 ```
