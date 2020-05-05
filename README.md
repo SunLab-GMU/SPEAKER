@@ -17,7 +17,7 @@ The Tracing Module could be executed with the following command. In ``speaker/Tr
 ```
 $ sudo python tracing.py
 ```
-Then, follow the output instructions of the script to run a docker container, wait at least 120 seconds for container to warm up, perform normal operations as much as possible e.g., [HammerDB](https://sourceforge.net/projects/hammerdb/files/HammerDB/HammerDB-3.2/HammerDB-3.2-Linux.tar.gz/download)), and gracefully shutdown the container.
+Then, follow the output instructions of the script to run a docker container, wait at least 120 seconds for container to warm up, perform normal operations as much as possible (e.g., [HammerDB](https://sourceforge.net/projects/hammerdb/files/HammerDB/HammerDB-3.2/HammerDB-3.2-Linux.tar.gz/download)), and gracefully shutdown the container.
 
 After that, three syscall lists will be generated for booting, running, and shutdown phases in the folder ``speaker/profile``. You can also prepare the syscall lists by yourself (refer [syscall list examples](./ProfileExample) for format).
 
