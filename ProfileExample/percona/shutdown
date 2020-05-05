@@ -26,3 +26,4 @@ io_submit
 read
 exit_group
 mprotect
+rt_sigprocmask
