@@ -16,6 +16,13 @@ The Tracing Module utilizes the Linux audit log where the invoked syscall could 
 The Tracing Module could be executed with the following command. In ``speaker/TracingModule``:
 ```
 $ sudo python tracing.py
+# An example:
+# sudo docker run --security-opt seccomp:./log.json -p 3306:3306 -e MYSQL_ROOT_PASSWORD=mysql -d percona
+# c30efc346f75fe0994c57325c1608feabd8b7792e84e9dd8efeff1a053fb2951
+# Please wait for container to start up.
+# Please perform normal operations on the running docker application.
+# After that, to stop the docker, input: docker stop $container_id
+# docker stop c30 -t 900
 ```
 Then, follow the output instructions of the script to run a docker container, wait at least 120 seconds for container to warm up, perform normal operations as much as possible (e.g., benchmarking and load testing tool [HammerDB](https://sourceforge.net/projects/hammerdb/files/HammerDB/HammerDB-3.2/HammerDB-3.2-Linux.tar.gz/download)), and gracefully shutdown the container.
 
