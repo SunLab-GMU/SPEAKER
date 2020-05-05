@@ -17,7 +17,7 @@ The Tracing Module could be executed with the following command. In ``speaker/Tr
 ```
 $ sudo python tracing.py
 ```
-Then, follow the output instructions of the script to run a docker container, wait at least 120 seconds for container to warm up, perform normal operations as much as possible (e.g., [HammerDB](https://sourceforge.net/projects/hammerdb/files/HammerDB/HammerDB-3.2/HammerDB-3.2-Linux.tar.gz/download)), and gracefully shutdown the container.
+Then, follow the output instructions of the script to run a docker container, wait at least 120 seconds for container to warm up, perform normal operations as much as possible (e.g., benchmarking and load testing tool [HammerDB](https://sourceforge.net/projects/hammerdb/files/HammerDB/HammerDB-3.2/HammerDB-3.2-Linux.tar.gz/download)), and gracefully shutdown the container.
 
 After that, three syscall lists will be generated for booting, running, and shutdown phases in the folder ``speaker/profile``. You can also prepare the syscall lists by yourself (refer [syscall list examples](./ProfileExample) for format).
 
@@ -33,7 +33,7 @@ $ sudo make
 $ sudo ./speakeru -service SERVICE_NAME -cmd DOCKER_RUN_COMMAND
 
 # SERVICE_NAME is the name of first process within the container, DOCKER_RUN_COMMAND is the normal command to run the container
-# An example: sudo ./speakeru -service mysqld -cmd "docker run -p 3306:3306 -e MYSQL_ROOT_PASSWORD=mysql -d mysql"
+# An example: sudo ./speakeru -service mysqld -cmd "docker run -p 3306:3306 -e MYSQL_ROOT_PASSWORD=mysql -d percona"
 # Note: use quotes for DOCKER_RUN_COMMAND
 ```
 3. Perform your normal operations on this container application. Use ``docker stop`` to gracefully shutdown when you would like to stop it. To unload the kernel module, in ``speaker/SlimmingModule/KernelModule``:
