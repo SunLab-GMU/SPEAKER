@@ -84,9 +84,9 @@ int main(int argc, char *argv[]) {
      printf("Failed to open device!\n");
      return -1;
     }
-    prepare_filter("../Profile/booting", SET_BOOTING, chrdev_fd);
-    prepare_filter("../Profile/running", SET_RUNNING, chrdev_fd);
-    prepare_filter("../Profile/shutdown", SET_SHUTDOWN, chrdev_fd);
+    prepare_filter("../../Profile/booting", SET_BOOTING, chrdev_fd);
+    prepare_filter("../../Profile/running", SET_RUNNING, chrdev_fd);
+    prepare_filter("../../Profile/shutdown", SET_SHUTDOWN, chrdev_fd);
 
 
 
