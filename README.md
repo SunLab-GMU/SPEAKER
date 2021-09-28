@@ -1,5 +1,7 @@
 # SPEAKER: Split-Phase Execution of Application Containers
 
+SPEAKER is a system call reduction mechanism to reduce the attack surface of Linux application containers. It works by first tracing the available system calls necessary for the booting, running, and shutdown phases of the application containers, and then dynamically changing the seccomp filter to update the available system calls for each phase. SPEAKER runs outside the containers and is completely non-intrusive to the application containers. Our evaluation results show that SPEAKER can significantly reduce the system call interface and incurs almost no performance overhead.
+
 ## Prerequisites
 * **OS**: Ubuntu 16.04 with kernel version 4.15.0 (can be downloaded [here](https://releases.ubuntu.com/16.04/ubuntu-16.04.6-desktop-amd64.iso))
 * **Docker**: 19.03.6 or higher (can be installed by using [this script](./install-docker.sh))
