@@ -9,7 +9,7 @@ SPEAKER is a system call reduction mechanism to reduce the attack surface of Lin
 * **Linux audit**: run the command ``apt-get -y install auditd``
 * **Container image**: most can be pulled from [Docker Hub](https://hub.docker.com)
 
-A VMware image with all above can be found [here](https://nam11.safelinks.protection.outlook.com/?url=https%3A%2F%2Fdrive.google.com%2Ffile%2Fd%2F1m0xoH_U_9tXzaRwyKEIVtO8A-GARgxun%2Fview%3Fusp%3Dshare_link&data=05%7C01%7Cxwang44%40gmu.edu%7C9a1d11b871b14681dbaf08dada261618%7C9e857255df574c47a0c00546460380cb%7C0%7C0%7C638062154356574428%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=799ZsZzLlol7bsD%2BRGaYiWwpZpPS%2BPySu2noGhBga0w%3D&reserved=0) (password 123).
+A Virtualbox image with all above can be found [here](https://nam11.safelinks.protection.outlook.com/?url=https%3A%2F%2Fdrive.google.com%2Ffile%2Fd%2F1m0xoH_U_9tXzaRwyKEIVtO8A-GARgxun%2Fview%3Fusp%3Dshare_link&data=05%7C01%7Cxwang44%40gmu.edu%7C9a1d11b871b14681dbaf08dada261618%7C9e857255df574c47a0c00546460380cb%7C0%7C0%7C638062154356574428%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=799ZsZzLlol7bsD%2BRGaYiWwpZpPS%2BPySu2noGhBga0w%3D&reserved=0) (password 123).
 
 
 ## Using the SPEAKER
